@@ -7,9 +7,8 @@ The major difference is that my playback is based off of timestamp instead of it
 
 My use case is to record data in my C++ application that can later be analyzed in a Python script (i.e. make pretty plots), so hopefully this helps someone.
 
-It uses a small amount of C++11 that could be easily stripped out as it is mostly in the ``LeapRecorder::GetSystemMicroseconds()`` function, so you just need to replace it with your way of getting microseconds of execution time.
-This is only needed for playback though, so if you just want to record, you can strip it all out.
-The other use is simply an `auto` to save keystrokes in ``LeapRecorder::Save``.
+It does depend on C++11, but it wouldn't be too hard to backport it. The offenders are `std::mutex` and `std::chrono` and a few `auto`s.
+`std::chrono` can be easily stripped out as it is only for the ``LeapRecorder::GetSystemMicroseconds()`` function, so you just need to replace it with your way of getting microseconds of execution time.
 
 Files
 =====
