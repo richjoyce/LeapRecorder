@@ -1,1 +1,6 @@
 *.o
+*.pyc
+Leap.py
+libLeap.*
+LeapPython.so
+Leap.h
