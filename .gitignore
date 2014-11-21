@@ -4,3 +4,4 @@ Leap.py
 libLeap.*
 LeapPython.so
 Leap.h
+LeapMath.h
