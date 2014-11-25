@@ -22,10 +22,9 @@ void LeapRecorder::Play()
         return;
     }
 
-    playback_start_system = GetSystemMicroseconds();
     playback_index = 0;
-    playback_last_frame_returned = GetFrameAtIndex(playback_index);
-    playback_start_leap = playback_last_frame_returned.timestamp();
+    playback_start_system = GetSystemMicroseconds();
+    playback_start_leap = GetFrameAtIndex(playback_index).timestamp();
 }
 
 void LeapRecorder::Pause()
@@ -37,7 +36,7 @@ void LeapRecorder::Pause()
         state = STATE_PLAY;
         /* Reset the playback timers to now/current frame */
         playback_start_system = GetSystemMicroseconds();
-        playback_start_leap = playback_last_frame_returned.timestamp();
+        playback_start_leap = GetFrameAtIndex(playback_index).timestamp();
     }
 }
 
@@ -59,7 +58,6 @@ void LeapRecorder::Stop()
 {
     if (state == STATE_PLAY) {
         playback_index = 0;
-        playback_last_frame_returned = Leap::Frame();
     } else if (state == STATE_RECORDING) {
         /* don't need to do anything ? */
         /* do i want to save? */
@@ -118,29 +116,27 @@ bool LeapRecorder::Load(std::string filename)
 Leap::Frame LeapRecorder::GetCurrentFrame()
 {
     if (state == STATE_PAUSE) {
-        return playback_last_frame_returned;
+        return GetFrameAtIndex(playback_index);
     } else if (state == STATE_PLAY) {
         /* Load newest frame, based on timestamp */
-        int64_t system_seconds = GetSystemMicroseconds() - playback_start_system;
-        int64_t leap_seconds = playback_last_frame_returned.timestamp()-playback_start_leap;
-
         /* Loop until next frame is past the current time */
-        Leap::Frame last = playback_last_frame_returned;
+        Leap::Frame last = GetFrameAtIndex(playback_index);
         Leap::Frame next = last;
+        int64_t system_seconds = GetSystemMicroseconds() - playback_start_system;
+        int64_t leap_seconds = next.timestamp()-playback_start_leap;
+
         while (system_seconds > leap_seconds) {
-            if (playback_index+1 >= frames.size()) { /* Check if we went too far */
+            if (playback_index+1 >= frames.size()) { /* Check if we will go too far */
                 std::cout << "Reached end of playback." << std::endl;
                 Stop();
                 if (loop) Play(); // Restart if looping
                 return GetCurrentFrame(); // Returns first frame if looping or invalid if stopped
             }
-            last = next;
-            next = GetFrameAtIndex(playback_index+1);
-            leap_seconds = next.timestamp() - playback_start_leap;
             playback_index++;
+            last = next;
+            next = GetFrameAtIndex(playback_index);
+            leap_seconds = next.timestamp() - playback_start_leap;
         }
-        /* NB next frame is too far in the future, so give back the last one */
-        playback_last_frame_returned = last;
         return last;
     } else {
         return Leap::Frame();

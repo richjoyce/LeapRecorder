@@ -43,7 +43,6 @@ private:
     int64_t playback_start_system;
     int64_t GetSystemMicroseconds();
 
-    Leap::Frame playback_last_frame_returned;
     unsigned int playback_index;
     Leap::Frame GetFrameAtIndex(unsigned int index);
 
